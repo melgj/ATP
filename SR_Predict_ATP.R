@@ -49,6 +49,8 @@ for(i in unique(test$period)) {
 
 wp <- table(Result = test$result, Predictions=pred)
 
+wp
+
 accuracy_pct <- round(100*(wp[1,2] / (wp[1,1] + wp[1,2])),2) 
 
 accuracy_pct
@@ -72,6 +74,7 @@ metrics(valid$result, pred)
 sRat$ratings
 
 predDF <- tibble(actual = valid$result, predicted = pred)
+head(predDF)
 
 brier <- brierscore(actual ~ predicted, data = predDF)
 brier

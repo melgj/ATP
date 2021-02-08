@@ -28,9 +28,15 @@ base_date <- min(results$tourney_date)
 head(results)
 tail(results)
 
+unique(results$round)
+
+rndLevels <- c("BR","RR","ER","R128","R64","R32","R16","QF","SF","F")
+
+results$round <- factor(results$round, rndLevels, ordered = T)
+
 ### Sort by Tournament Date
 results_sorted <- results %>% 
-  arrange(tourney_date)
+  arrange(tourney_date, round)
 
 ### Create column which holds week value (from base date)
 results_sorted$period <- lubridate::interval(base_date, results_sorted$tourney_date) %/% weeks(1)+1
