@@ -8,7 +8,7 @@ library(reshape2)
 ### import results from csv (Jan 2000 to Jan 2021)
 
 #players <- read_csv("atp_players.csv", col_names = T)
-results <- read_csv("atp_results_db.csv", col_names = T)
+results <- read_csv("atp_results_db_feb21.csv", col_names = T)
 
 unique(results$tourney_level)
 
@@ -74,7 +74,7 @@ sr_current <- sr_df %>%
 head(sr_current,10)
 
 ### Write ratings to csv file
-write_csv(sr_current, "atp_SR_ratings_jan21.csv")
+write_csv(sr_current, "atp_SR_ratings_feb21.csv")
 
 ### Convert historical ratings to data frame
 sr_timeline <- as_tibble(srtng$history, rownames = "Player")
