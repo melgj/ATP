@@ -17,10 +17,10 @@ str(results$tourney_date)
 ### filter matches by valid tour levels (ignore exhibitions etc.)
 tours = c("G", "M", "A", "F", "D")
 
+results$tourney_date <- ymd(results$tourney_date)
+
 results <- results %>% 
   filter(tourney_level %in% tours)
-
-results$tourney_date <- ymd(results$tourney_date)
 
 ### Select earliest date in data frame as base date
 base_date <- min(results$tourney_date)
@@ -114,8 +114,8 @@ ggplot(temp,
   labs(title = "ATP Player Ratings Through Time - Current Top 20 Rated Players (Stephenson ELO Variant)", 
        x = "Time", y = "Rating") +
   scale_x_discrete(labels = NULL) +
-  ylim(1500,2100) +
-  geom_hline(yintercept = c(1700, 1900), col = "grey", lty = 2) +
+  ylim(1600,2100) +
+  geom_hline(yintercept = c(1700,1800,1900, 2000), col = "grey", lty = 2) +
   geom_line() +
   geom_smooth(lty = 2, lwd = 0.5, col = "red") +
   facet_wrap(~ Player, nrow = 4)
