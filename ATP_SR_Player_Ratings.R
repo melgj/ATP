@@ -4,23 +4,43 @@ library(tidyverse)
 library(PlayerRatings)
 library(lubridate)
 library(reshape2)
+library(plotly)
+library(crosstalk)
+library(RPostgres)
+library(DBI)
 
-### import results from csv (Jan 2000 to Jan 2021)
 
-#players <- read_csv("atp_players.csv", col_names = T)
-results <- read_csv("atp_results_db_feb21.csv", col_names = T)
+### import results from wta results database from Jan 2000)
+
+username <- readline(prompt = "Enter postgresql Username: ")
+dbpw <- readline(prompt = "Enter postgresql password: ")
+
+con <- dbConnect(RPostgres::Postgres(), dbname = 'atp',
+                 host = 'localhost',
+                 port = 5432,
+                 user = username,
+                 password = dbpw)
+
+qry <- "SELECT * from atp_results 
+          where extract(year from tourney_date) >= 2000"
+
+dbListFields(con, "atp_results")
+
+results <- as_tibble(dbGetQuery(con, qry))
+
+dbDisconnect(con)
+
+head(results)
 
 unique(results$tourney_level)
 
-str(results$tourney_date)
-
 ### filter matches by valid tour levels (ignore exhibitions etc.)
-tours = c("G", "M", "A", "F", "D")
+tour_levels = c("G", "M", "A", "F", "D")
 
 results$tourney_date <- ymd(results$tourney_date)
 
 results <- results %>% 
-  filter(tourney_level %in% tours)
+  filter(tourney_level %in% tour_levels)
 
 ### Select earliest date in data frame as base date
 base_date <- min(results$tourney_date)
@@ -30,7 +50,7 @@ tail(results)
 
 unique(results$round)
 
-rndLevels <- c("BR","RR","ER","R128","R64","R32","R16","QF","SF","F")
+rndLevels <- c("RR","ER","R128","R64","R32","R16","QF","BR","SF","F")
 
 results$round <- factor(results$round, rndLevels, ordered = T)
 
@@ -69,7 +89,7 @@ tail(sr_df)
 ### with low ratings and players with insufficient games.
 
 sr_current <- sr_df %>% 
-  filter(Lag < 25, Rating >= 1600, Games >= 30)
+  filter(Lag < 20, Rating >= 1600, Games >= 30)
 
 head(sr_current,10)
 
@@ -105,17 +125,21 @@ tail(temp, 10)
 
 unique(temp$Player)
 
-ggplot(temp,
+p <- ggplot(temp,
        aes(x = Time,
            y = Rating,
-           col = Player,
+           #col = Player,
            group = Player
        )) +
   labs(title = "ATP Player Ratings Through Time - Current Top 20 Rated Players (Stephenson ELO Variant)", 
        x = "Time", y = "Rating") +
   scale_x_discrete(labels = NULL) +
-  ylim(1600,2100) +
-  geom_hline(yintercept = c(1700,1800,1900, 2000), col = "grey", lty = 2) +
-  geom_line() +
-  geom_smooth(lty = 2, lwd = 0.5, col = "red") +
+  ylim(1500,2100) +
+  geom_hline(yintercept = c(1600,1700,1800,1900, 2000), col = "grey", lty = 2) +
+  geom_line(col = "blue") +
+  geom_smooth(lty = 2, lwd = 0.2, col = "red") +
   facet_wrap(~ Player, nrow = 4)
+
+p
+
+ggplotly(p, tooltip = c("Player","Rating"))
